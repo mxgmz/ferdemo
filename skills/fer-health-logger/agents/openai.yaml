@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fer Health Logger"
+  short_description: "Log Fer health updates safely"
+  default_prompt: "Use $fer-health-logger to log Fer's latest health, food, exercise, or sleep update."

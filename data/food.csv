@@ -1,0 +1,8 @@
+date,time,meal_type,item_type,item,quantity,unit,calories,calorie_source,api_food_name,notes
+2026-06-21,,breakfast,food,eggs,200,g,310,USDA FoodData Central; fdc_id=173424; query=egg whole cooked hard-boiled,"Egg, whole, cooked, hard-boiled",from natural-language breakfast entry; generic eggs mapped to plain cooked eggs
+2026-06-21,,breakfast,food,beans,100,g,132,USDA FoodData Central; fdc_id=175237; query=black beans cooked,"Beans, black, mature seeds, cooked, boiled, with salt",from natural-language breakfast entry; generic frijoles mapped to black beans cooked
+2026-06-21,,breakfast,beverage,coffee,250,ml,2,USDA FoodData Central; fdc_id=2710375; query=coffee brewed,"Coffee, brewed",from natural-language breakfast entry
+2026-06-21,15:00,lunch,beverage,water,1000,ml,0,manual; plain water is 0 kcal,Water,from natural-language lunch entry; one liter of water
+2026-06-21,15:00,lunch,food,sirloin,150,g,364,local nutrition reference; source=USDA FoodData Central SR-style reference; kcal_per_100g=243,Beef top sirloin trimmed to 1/8 inch fat cooked broiled,from natural-language lunch entry; local reference used; plain cooked sirloin default
+2026-06-21,15:00,lunch,food,oatmeal cooked,200,g,142,local nutrition reference; source=USDA FoodData Central SR-style reference; kcal_per_100g=71,Oatmeal cooked with water without salt,from natural-language lunch entry; oatmeal was prepared with water
+2026-06-21,15:00,lunch,food,carrot,122,g,50,local nutrition reference; source=USDA FoodData Central SR-style reference; kcal_per_100g=41,Carrots raw,from natural-language lunch entry; estimated as one small carrot 50 g plus one large carrot 72 g

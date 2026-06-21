@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fer Health Dashboard Operator"
+  short_description: "Maintain Fer health dashboard"
+  default_prompt: "Use $fer-health-dashboard-operator to update or verify the Fer Health OS dashboard."

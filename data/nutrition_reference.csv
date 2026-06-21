@@ -1,0 +1,8 @@
+item,aliases,kcal_per_100g,reference_food_name,source,notes
+water,agua,0,Water,plain water,0 kcal beverage
+coffee,cafe|café,1,Coffee brewed without additions,USDA FoodData Central SR-style reference,black coffee default
+eggs,egg|huevos|huevo,155,Egg whole cooked hard-boiled,USDA FoodData Central SR-style reference,plain cooked egg default
+beans,frijoles|black beans,132,Beans black mature seeds cooked boiled with salt,USDA FoodData Central SR-style reference,generic cooked beans default
+sirloin,beef top sirloin|top sirloin|sirloin steak,243,Beef top sirloin trimmed to 1/8 inch fat cooked broiled,USDA FoodData Central SR-style reference,cooked broiled sirloin default
+oatmeal cooked,avena cocida|cooked oatmeal|oats cooked,71,Oatmeal cooked with water without salt,USDA FoodData Central SR-style reference,cooked prepared oatmeal with water
+carrot,zanahoria|carrots|raw carrot|raw carrots,41,Carrots raw,USDA FoodData Central SR-style reference,raw carrot default

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es" data-version="2026-06-21T15:08:06.148296">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B0F0E'/%3E%3Cpath d='M8 17h5l2-6 4 12 2-6h3' fill='none' stroke='%237AE7B7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>Fer Health OS Dashboard</title>
+  <style>
+    :root {
+      --bg: #0B0F0E;
+      --panel: #121816;
+      --panel-2: #18201D;
+      --line: #33443D;
+      --text: #EFF7F2;
+      --muted: #98A79F;
+      --mint: #7AE7B7;
+      --violet: #B8A4FF;
+      --amber: #F4C95D;
+      --coral: #F97068;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Avenir Next, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100dvh; }
+    .rail {
+      border-right: 1px solid var(--line);
+      background: #09100D;
+      padding: 22px 16px;
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+    }
+    .brand { display: grid; gap: 4px; margin-bottom: 24px; }
+    .brand strong { font-size: 18px; }
+    .brand span, .meta, small { color: var(--muted); }
+    .nav { display: grid; gap: 8px; }
+    .nav button {
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+    .nav button.active, .nav button:hover, .nav button:focus-visible {
+      color: var(--text);
+      border-color: var(--line);
+      background: var(--panel);
+      outline: none;
+    }
+    main { padding: 28px; max-width: 1380px; width: 100%; }
+    .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 22px; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 28px; line-height: 1.2; }
+    h2 { font-size: 20px; margin-bottom: 14px; }
+    h3 { font-size: 15px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .grid { display: grid; gap: 14px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel, .stat-card, .day-block {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .panel { padding: 16px; }
+    .stat-card { padding: 14px; display: grid; gap: 4px; min-height: 112px; }
+    .stat-card span { color: var(--muted); font-size: 13px; }
+    .stat-card strong { font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .stat-card small { min-height: 20px; }
+    .today-list { display: grid; gap: 10px; }
+    .today-item {
+      display: grid;
+      grid-template-columns: 90px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel-2);
+    }
+    .pill {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--mint);
+      background: rgba(122, 231, 183, 0.08);
+      font-size: 12px;
+    }
+    .chart { width: 100%; height: 130px; display: block; background: var(--panel-2); border-radius: 6px; }
+    .chart-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .empty-chart, .empty-state {
+      min-height: 84px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      background: var(--panel-2);
+      padding: 16px;
+    }
+    .day-block { overflow: hidden; box-shadow: none; }
+    .day-block header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--line);
+    }
+    .day-block header span { color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(51, 68, 61, 0.75); vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; font-weight: 600; }
+    td { font-size: 14px; }
+    .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin: 4px 0 16px; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); }
+    .search {
+      min-height: 44px;
+      width: min(280px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 9px 12px;
+    }
+    .meta { font-size: 13px; }
+    @media (max-width: 920px) {
+      .shell { grid-template-columns: 1fr; }
+      .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .nav button { text-align: center; padding: 8px 6px; }
+      main { padding: 18px; }
+      .stats, .two, .three, .chart-row { grid-template-columns: 1fr; }
+      .topbar, .section-head { display: grid; }
+      .today-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">
+        <strong>Fer Health OS</strong>
+        <span>CSV local dashboard</span>
+      </div>
+      <nav class="nav" aria-label="Pantallas">
+        <button class="active" data-screen="home">Hoy</button>
+        <button data-screen="health">Salud</button>
+        <button data-screen="food">Comida</button>
+        <button data-screen="exercise">Ejercicio</button>
+        <button data-screen="sleep">Sueño</button>
+      </nav>
+    </aside>
+    <main>
+      <div class="topbar">
+        <div>
+          <h1>Hoy, 2026-06-21</h1>
+          <div class="meta">Generado desde CSVs locales. Sin diagnosticos, solo seguimiento.</div>
+        </div>
+        <div class="pill">Actualizado 2026-06-21 15:08</div>
+      </div>
+
+      <section id="home" class="screen active">
+        <div class="grid stats">
+          <article class="stat-card"><span>Peso mas reciente</span><strong>Sin datos</strong><small></small></article>
+          <article class="stat-card"><span>Grasa corporal</span><strong>Sin datos</strong><small></small></article>
+          <article class="stat-card"><span>Calorias hoy</span><strong>1000.0</strong><small>7 comidas registradas</small></article>
+          <article class="stat-card"><span>Ejercicio hoy</span><strong>60.0 min</strong><small>1 sesiones registradas</small></article>
+        </div>
+        <div class="grid two">
+          <section class="panel">
+            <h2>Como vamos hoy</h2>
+            <div class="today-list">
+              <div class="today-item"><span class="pill">Comida</span><strong>1000.0</strong><small>calorias registradas hoy</small></div>
+              <div class="today-item"><span class="pill">Ejercicio</span><strong>60.0 min</strong><small>actividad registrada hoy</small></div>
+              <div class="today-item"><span class="pill">Sueño</span><strong>8.2 h</strong><small>ultimo registro de sueño de hoy</small></div>
+            </div>
+          </section>
+          <section class="panel">
+            <h2>Mini tendencias</h2>
+            <div class="chart-row">
+              <div><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></div>
+              <div><h3>Calorias</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#B8A4FF"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="health" class="screen">
+        <div class="section-head">
+          <div><h2>Salud corporal</h2><p>Peso, grasa, hidratacion y origen de medicion.</p></div>
+        </div>
+        <div class="grid three">
+          <section class="panel"><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></section>
+          <section class="panel"><h3>Grasa corporal</h3><div class="empty-chart">Sin datos suficientes</div></section>
+          <article class="stat-card"><span>Hidratacion mas reciente</span><strong>Sin datos</strong><small></small></article>
+        </div>
+        <div class="grid" style="margin-top:14px;"><div class="empty-state">Sin registros para mostrar.</div></div>
+      </section>
+
+      <section id="food" class="screen">
+        <div class="section-head">
+          <div><h2>Comida por dia</h2><p>Revisa que comio ayer, antier o cualquier dia registrado.</p></div>
+          <input class="search" data-filter="food" placeholder="Filtrar por fecha o texto">
+        </div>
+        <div class="grid two">
+          <section class="panel"><h3>Calorias por dia</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#B8A4FF"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></section>
+          <article class="stat-card"><span>Items registrados</span><strong>7</strong><small>total historico</small></article>
+        </div>
+        <div class="grid filterable" data-list="food" style="margin-top:14px;">
+          <section class="day-block"><header><strong>2026-06-21</strong><span>7 registros</span></header><div class="table-wrap"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Clase</th><th>Item</th><th>Cantidad</th><th>Unidad</th><th>Calorias</th><th>Fuente API</th><th>Notas</th></tr></thead><tbody><tr><td></td><td>breakfast</td><td>food</td><td>eggs</td><td>200</td><td>g</td><td>310</td><td>Egg, whole, cooked, hard-boiled</td><td>from natural-language breakfast entry; generic eggs mapped to plain cooked eggs</td></tr><tr><td></td><td>breakfast</td><td>food</td><td>beans</td><td>100</td><td>g</td><td>132</td><td>Beans, black, mature seeds, cooked, boiled, with salt</td><td>from natural-language breakfast entry; generic frijoles mapped to black beans cooked</td></tr><tr><td></td><td>breakfast</td><td>beverage</td><td>coffee</td><td>250</td><td>ml</td><td>2</td><td>Coffee, brewed</td><td>from natural-language breakfast entry</td></tr><tr><td>15:00</td><td>lunch</td><td>beverage</td><td>water</td><td>1000</td><td>ml</td><td>0</td><td>Water</td><td>from natural-language lunch entry; one liter of water</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>sirloin</td><td>150</td><td>g</td><td>364</td><td>Beef top sirloin trimmed to 1/8 inch fat cooked broiled</td><td>from natural-language lunch entry; local reference used; plain cooked sirloin default</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>oatmeal cooked</td><td>200</td><td>g</td><td>142</td><td>Oatmeal cooked with water without salt</td><td>from natural-language lunch entry; oatmeal was prepared with water</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>carrot</td><td>122</td><td>g</td><td>50</td><td>Carrots raw</td><td>from natural-language lunch entry; estimated as one small carrot 50 g plus one large carrot 72 g</td></tr></tbody></table></div></section>
+        </div>
+      </section>
+
+      <section id="exercise" class="screen">
+        <div class="section-head">
+          <div><h2>Ejercicio</h2><p>Sesiones, intensidad, duracion y calorias estimadas.</p></div>
+          <input class="search" data-filter="exercise" placeholder="Filtrar por fecha o tipo">
+        </div>
+        <div class="grid two">
+          <section class="panel"><h3>Minutos por dia</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#7AE7B7"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></section>
+          <article class="stat-card"><span>Sesiones registradas</span><strong>1</strong><small>total historico</small></article>
+        </div>
+        <div class="grid filterable" data-list="exercise" style="margin-top:14px;">
+          <section class="day-block"><header><strong>2026-06-21</strong><span>1 registros</span></header><div class="table-wrap"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Min</th><th>Intensidad</th><th>Calorias</th><th>Detalles</th><th>Notas</th></tr></thead><tbody><tr><td></td><td>boxing</td><td>60</td><td></td><td></td><td>sparring min: 20, rounds: 4</td><td>intensity and calories not provided</td></tr></tbody></table></div></section>
+        </div>
+      </section>
+
+      <section id="sleep" class="screen">
+        <div class="section-head">
+          <div><h2>Sueño</h2><p>Horas, calidad y visitas al baño por noche.</p></div>
+        </div>
+        <div class="grid two">
+          <section class="panel"><h3>Horas de sueño</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#7AE7B7" stroke-width="3" /><g fill="#7AE7B7"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
+          <section class="panel"><h3>Calidad</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#B8A4FF" stroke-width="3" /><g fill="#B8A4FF"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
+        </div>
+        <div class="grid" style="margin-top:14px;"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Dormir</th><th>Despertar</th><th>Horas</th><th>Calidad</th><th>Bano</th><th>Notas</th></tr></thead><tbody><tr><td>2026-06-21</td><td>00:00</td><td>08:15</td><td>8.25</td><td>7</td><td>3</td><td>went to sleep at midnight</td></tr></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+  <script type="application/json" id="payload">{&quot;generated&quot;: &quot;2026-06-21 15:08&quot;, &quot;version&quot;: &quot;2026-06-21T15:08:06.148296&quot;, &quot;today&quot;: &quot;2026-06-21&quot;}</script>
+  <script>
+    if (window.location.protocol.startsWith('http')) {
+      const currentVersion = document.documentElement.dataset.version;
+      const reloadWhenUpdated = (version) => {
+        if (version && currentVersion && version !== currentVersion) {
+          window.location.reload();
+        }
+      };
+
+      if (typeof EventSource !== 'undefined') {
+        const events = new EventSource('/events');
+        events.addEventListener('dashboard-updated', (event) => reloadWhenUpdated(event.data));
+      } else {
+        window.setInterval(async () => {
+          try {
+            const response = await fetch('/version', { cache: 'no-store' });
+            reloadWhenUpdated((await response.text()).trim());
+          } catch (error) {
+            console.warn('Dashboard refresh check failed', error);
+          }
+        }, 2000);
+      }
+    }
+
+    const buttons = document.querySelectorAll('[data-screen]');
+    const screens = document.querySelectorAll('.screen');
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        buttons.forEach((item) => item.classList.remove('active'));
+        screens.forEach((screen) => screen.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(button.dataset.screen).classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('[data-filter]').forEach((input) => {
+      input.addEventListener('input', () => {
+        const list = document.querySelector(`[data-list="${input.dataset.filter}"]`);
+        const query = input.value.trim().toLowerCase();
+        list.querySelectorAll('.day-block').forEach((block) => {
+          block.style.display = block.innerText.toLowerCase().includes(query) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

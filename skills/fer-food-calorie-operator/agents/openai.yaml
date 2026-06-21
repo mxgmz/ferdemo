@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fer Food Calorie Operator"
+  short_description: "Resolve food calories via APIs"
+  default_prompt: "Use $fer-food-calorie-operator to resolve Fer Health OS meal items and calories."
