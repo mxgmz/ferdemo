@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fer Git Daily Backup"
+  short_description: "Daily safe Git backup for Fer Health OS"
+  default_prompt: "Use $fer-git-daily-backup to safely commit and push Fer Health OS changes."

@@ -244,6 +244,24 @@ skills/fer-food-calorie-operator/references/usda_query_defaults.md
 
 This skill is narrower than `fer-health-logger`: use it when food/calorie correctness is the main problem. For ordinary daily logging that includes food plus sleep/exercise, use `fer-health-logger` first and let it route food details through this skill if needed.
 
+### `skills/fer-git-daily-backup`
+
+Use this local skill whenever the repo needs a safe GitHub backup, especially for the daily midnight automation.
+
+Before doing this work, read:
+
+```txt
+skills/fer-git-daily-backup/SKILL.md
+```
+
+Run the bundled script from the repo root:
+
+```bash
+python3 skills/fer-git-daily-backup/scripts/daily_git_backup.py
+```
+
+The script commits local changes and pushes `main` only when safe. It never force-pushes.
+
 ### `skills/fer-health-dashboard-operator`
 
 Use this local skill whenever the task changes or verifies the dashboard, local server, report presentation, schema, CSV migration, or visual display of Fer Health OS.
