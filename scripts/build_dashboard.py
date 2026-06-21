@@ -87,7 +87,7 @@ def last_n_points(mapping, count=14):
     return [(label, value) for label, value in items]
 
 
-def line_chart(points, color="#7AE7B7"):
+def line_chart(points, color="#477a4e"):
     if not points:
         return '<div class="empty-chart">Sin datos suficientes</div>'
     width = 320
@@ -113,7 +113,7 @@ def line_chart(points, color="#7AE7B7"):
     )
 
 
-def bar_chart(points, color="#B8A4FF"):
+def bar_chart(points, color="#477a4e"):
     if not points:
         return '<div class="empty-chart">Sin datos suficientes</div>'
     width = 320
@@ -131,25 +131,94 @@ def bar_chart(points, color="#B8A4FF"):
     return f'<svg class="chart" viewBox="0 0 {width} {height}" role="img"><g fill="{color}">{"".join(bars)}</g></svg>'
 
 
-def stat_card(label, value, hint=""):
+def progress_card(label, value, max_value, axis_mid, axis_max):
+    fill = 0
+    if value is not None and max_value:
+        fill = max(0, min(100, (value / max_value) * 100))
     return (
-        '<article class="stat-card">'
-        f'<span>{safe(label)}</span>'
-        f'<strong>{safe(value)}</strong>'
-        f'<small>{safe(hint)}</small>'
+        '<article class="card metric-card">'
+        f'<h3>{safe(label)}</h3>'
+        '<div class="calorie-chart">'
+        '<div class="bar-track">'
+        f'<div class="bar-fill" style="width:{fill:.0f}%"></div>'
+        '</div>'
+        '<div class="axis">'
+        '<span>0</span>'
+        f'<span>{safe(axis_mid)}</span>'
+        f'<span>{safe(axis_max)}</span>'
+        '</div>'
+        '</div>'
+        '</article>'
+    )
+
+
+def stat_card(label, value, hint="", icon=""):
+    ghost = ""
+    if icon:
+        ghost = f'<div class="ghost-icon" aria-hidden="true">{icon}</div>'
+    return (
+        '<article class="card metric-card">'
+        f'<h3>{safe(label)}</h3>'
+        f'<div class="big-number">{safe(value)}</div>'
+        f'<div class="metric-label">{safe(hint)}</div>'
+        f"{ghost}"
         "</article>"
     )
 
 
-def table(headers, rows):
+def tag_class(value):
+    normalized = (value or "").strip().lower()
+    if normalized == "breakfast":
+        return "tag tag-breakfast"
+    if normalized in {"lunch", "dinner", "snack", "other"}:
+        return "tag tag-meal"
+    if normalized == "beverage":
+        return "tag tag-beverage"
+    if normalized == "food":
+        return "tag tag-food"
+    if normalized in {"high", "very_high"}:
+        return "tag tag-breakfast"
+    if normalized in {"medium", "low"}:
+        return "tag tag-meal"
+    return "tag"
+
+
+def table_cell(key, value):
+    if key in {"meal_type", "item_type", "intensity"} and value:
+        return f'<span class="{tag_class(value)}">{safe(value)}</span>'
+    if key in {"quantity", "calories", "estimated_calories_burned", "duration_minutes", "duration_hours", "quality_1_10", "bathroom_visits", "weight_kg", "body_fat_pct", "hydration_pct"}:
+        return f'<span class="num">{safe(value)}</span>'
+    if key in {"api_food_name", "notes", "details"}:
+        return f'<span class="notes">{safe(value)}</span>'
+    if value == "":
+        return '<span class="muted">-</span>'
+    return safe(value)
+
+
+def table(headers, rows, extra_class=""):
     if not rows:
         return '<div class="empty-state">Sin registros para mostrar.</div>'
-    head = "".join(f"<th>{safe(label)}</th>" for _, label in headers)
+    head = "".join(f'<th class="{safe(column_class(key))}">{safe(label)}</th>' for key, label in headers)
     body_rows = []
     for row in rows:
-        cells = "".join(f"<td>{safe(row.get(key, ''))}</td>" for key, _ in headers)
+        cells = "".join(f"<td>{table_cell(key, row.get(key, ''))}</td>" for key, _ in headers)
         body_rows.append(f"<tr>{cells}</tr>")
-    return f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{"".join(body_rows)}</tbody></table></div>'
+    return f'<div class="table-scroll {safe(extra_class)}"><table><thead><tr>{head}</tr></thead><tbody>{"".join(body_rows)}</tbody></table></div>'
+
+
+def column_class(key):
+    classes = {
+        "time": "col-time",
+        "meal_type": "col-type",
+        "item_type": "col-class",
+        "item": "col-item",
+        "quantity": "col-qty",
+        "unit": "col-unit",
+        "calories": "col-cal",
+        "api_food_name": "col-source",
+        "notes": "col-notes",
+    }
+    return classes.get(key, "")
 
 
 def humanize_metadata(value):
@@ -190,12 +259,40 @@ def day_blocks(grouped, renderer):
     blocks = []
     for day, rows in grouped.items():
         blocks.append(
-            '<section class="day-block">'
-            f'<header><strong>{safe(day)}</strong><span>{len(rows)} registros</span></header>'
+            '<section class="card table-card day-block">'
+            '<div class="table-header">'
+            f'<h3>{safe(day)}</h3>'
+            f'<span class="count-pill">{len(rows)} registros</span>'
+            '</div>'
             f"{renderer(rows)}"
             "</section>"
         )
     return "".join(blocks)
+
+
+def nav_icon(name):
+    icons = {
+        "home": '<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-linejoin="round" />',
+        "health": '<path d="M20.2 5.8a5.2 5.2 0 0 0-7.4 0L12 6.6l-.8-.8a5.2 5.2 0 0 0-7.4 7.4L12 21l8.2-7.8a5.2 5.2 0 0 0 0-7.4Z" stroke="currentColor" stroke-linejoin="round" />',
+        "food": '<path d="M7 3v8M4 3v8M10 3v8M4 11h6M7 11v10M17 3v18M17 3c2.2 2.2 3 4.4 3 7 0 2-1.1 3-3 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />',
+        "exercise": '<path d="M6.5 7.5h11M8 5v5M16 5v5M4 9v3M20 9v3M9 15l3-2 3 2M12 13v7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />',
+        "sleep": '<path d="M20 15.2A8.2 8.2 0 0 1 8.8 4a7.6 7.6 0 1 0 11.2 11.2Z" stroke="currentColor" stroke-linejoin="round" />',
+        "doc": '<path d="M9 5h6M9 9h6M9 13h4M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />',
+    }
+    return f'<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{icons[name]}</svg>'
+
+
+def plant_svg():
+    return """
+      <svg class="plant" viewBox="0 0 160 160" fill="none" aria-hidden="true">
+        <path d="M82 132V75" stroke="#9CAF88" stroke-width="4" stroke-linecap="round" />
+        <path d="M82 96C57 96 41 77 38 46c28 2 47 18 44 50Z" fill="#D9E5C8" />
+        <path d="M88 85c29-7 45-25 48-55-27 1-49 21-48 55Z" fill="#B9C9A3" />
+        <path d="M74 115c-23-4-39-20-48-48 29 2 47 18 48 48Z" fill="#C8D7B5" />
+        <path d="M86 117c23-5 38-20 45-46-27 3-44 19-45 46Z" fill="#E0E8D3" />
+        <ellipse cx="82" cy="139" rx="46" ry="8" fill="#EAEFE2" />
+      </svg>
+    """
 
 
 def build_context():
@@ -252,7 +349,7 @@ def render_dashboard(context):
         ("quantity", "Cantidad"),
         ("unit", "Unidad"),
         ("calories", "Calorias"),
-        ("api_food_name", "Fuente API"),
+        ("api_food_name", "Referencia"),
         ("notes", "Notas"),
     ]
     health_headers = [
@@ -283,269 +380,640 @@ def render_dashboard(context):
         ("notes", "Notas"),
     ]
 
+    generated = datetime.now().strftime("%Y-%m-%d %H:%M")
     payload = {
-        "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "generated": generated,
         "version": datetime.now().isoformat(timespec="microseconds"),
         "today": today.isoformat(),
+        "style": "Botanical Ledger Light",
     }
+
+    today_sleep_hours = None
+    if context["today_sleep"]:
+        today_sleep_hours = number(context["today_sleep"][-1].get("duration_hours", ""))
 
     return f"""<!doctype html>
 <html lang="es" data-version="{safe(payload["version"])}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B0F0E'/%3E%3Cpath d='M8 17h5l2-6 4 12 2-6h3' fill='none' stroke='%237AE7B7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%23edf4e8'/%3E%3Cpath d='M23.2 7.1C19.5 6.8 16.4 7.9 14 10.2c-2.4 2.2-3.6 5.4-3.5 9.6 5.3-.1 9-1.6 11-4.4 1.6-2 2.1-4.8 1.7-8.3Z' fill='none' stroke='%23315b38' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M7 25c2.7-6.4 7-10.7 13.2-12.8' fill='none' stroke='%23315b38' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
   <title>Fer Health OS Dashboard</title>
   <style>
     :root {{
-      --bg: #0B0F0E;
-      --panel: #121816;
-      --panel-2: #18201D;
-      --line: #33443D;
-      --text: #EFF7F2;
-      --muted: #98A79F;
-      --mint: #7AE7B7;
-      --violet: #B8A4FF;
-      --amber: #F4C95D;
-      --coral: #F97068;
-      --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+      --bg: #f7f8f4;
+      --bg-soft: #fbfbf8;
+      --sidebar: #fafbf7;
+      --card: #ffffff;
+      --card-soft: #f9faf6;
+      --text: #17201b;
+      --text-muted: #68736b;
+      --text-soft: #8a928b;
+      --border: #e3e8df;
+      --border-strong: #d4ddcf;
+      --shadow-sm: 0 4px 14px rgba(24, 38, 29, 0.06);
+      --shadow-md: 0 16px 40px rgba(24, 38, 29, 0.08);
+      --accent: #477a4e;
+      --accent-dark: #315b38;
+      --accent-soft: #edf4e8;
+      --accent-soft-2: #f4f8ef;
+      --blue-soft: #eef5f7;
+      --blue: #416c7a;
+      --orange-soft: #fbf2e8;
+      --orange: #976735;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --sidebar-w: 272px;
+      --content-max: 1180px;
     }}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      background: var(--bg);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 70% 0%, rgba(82, 117, 84, 0.08), transparent 30%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
       color: var(--text);
-      font-family: Inter, Avenir Next, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
     }}
     button, input {{ font: inherit; }}
-    .shell {{ display: grid; grid-template-columns: 240px 1fr; min-height: 100dvh; }}
-    .rail {{
-      border-right: 1px solid var(--line);
-      background: #09100D;
-      padding: 22px 16px;
+    .app-shell {{
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    }}
+    .sidebar {{
       position: sticky;
       top: 0;
-      height: 100dvh;
+      height: 100vh;
+      padding: 30px 20px;
+      border-right: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(250, 251, 247, 0.92)),
+        var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }}
-    .brand {{ display: grid; gap: 4px; margin-bottom: 24px; }}
-    .brand strong {{ font-size: 18px; }}
-    .brand span, .meta, small {{ color: var(--muted); }}
-    .nav {{ display: grid; gap: 8px; }}
-    .nav button {{
-      min-height: 44px;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      background: transparent;
-      color: var(--muted);
-      text-align: left;
-      padding: 10px 12px;
-      cursor: pointer;
+    .brand {{
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      margin-bottom: 54px;
     }}
-    .nav button.active, .nav button:hover, .nav button:focus-visible {{
-      color: var(--text);
-      border-color: var(--line);
-      background: var(--panel);
-      outline: none;
-    }}
-    main {{ padding: 28px; max-width: 1380px; width: 100%; }}
-    .topbar {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 22px; }}
-    h1, h2, h3 {{ margin: 0; letter-spacing: 0; }}
-    h1 {{ font-size: 28px; line-height: 1.2; }}
-    h2 {{ font-size: 20px; margin-bottom: 14px; }}
-    h3 {{ font-size: 15px; }}
-    .screen {{ display: none; }}
-    .screen.active {{ display: block; }}
-    .grid {{ display: grid; gap: 14px; }}
-    .stats {{ grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }}
-    .two {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-    .three {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
-    .panel, .stat-card, .day-block {{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }}
-    .panel {{ padding: 16px; }}
-    .stat-card {{ padding: 14px; display: grid; gap: 4px; min-height: 112px; }}
-    .stat-card span {{ color: var(--muted); font-size: 13px; }}
-    .stat-card strong {{ font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1.1; }}
-    .stat-card small {{ min-height: 20px; }}
-    .today-list {{ display: grid; gap: 10px; }}
-    .today-item {{
-      display: grid;
-      grid-template-columns: 90px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      min-height: 48px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--panel-2);
-    }}
-    .pill {{
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      min-height: 26px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      color: var(--mint);
-      background: rgba(122, 231, 183, 0.08);
-      font-size: 12px;
-    }}
-    .chart {{ width: 100%; height: 130px; display: block; background: var(--panel-2); border-radius: 6px; }}
-    .chart-row {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
-    .empty-chart, .empty-state {{
-      min-height: 84px;
+    .brand-mark {{
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--accent-soft);
       display: grid;
       place-items: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      border-radius: 6px;
-      background: var(--panel-2);
-      padding: 16px;
+      color: var(--accent-dark);
+      flex: 0 0 auto;
     }}
-    .day-block {{ overflow: hidden; box-shadow: none; }}
-    .day-block header {{
+    .brand-mark svg {{ width: 22px; height: 22px; }}
+    .brand h1 {{
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      font-weight: 760;
+    }}
+    .brand p {{
+      margin: 7px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }}
+    .nav {{
+      display: grid;
+      gap: 10px;
+    }}
+    .nav-item {{
+      min-height: 52px;
+      padding: 0 16px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      color: var(--text-muted);
+      background: transparent;
+      font-weight: 600;
+      position: relative;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-align: left;
+    }}
+    .nav-item svg {{
+      width: 21px;
+      height: 21px;
+      stroke-width: 1.9;
+      flex: 0 0 auto;
+    }}
+    .nav-item.active {{
+      color: var(--accent-dark);
+      background: linear-gradient(90deg, var(--accent-soft), rgba(255, 255, 255, 0.88));
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }}
+    .nav-item.active::before {{
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 10px;
+      width: 4px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--accent);
+    }}
+    .nav-item:hover, .nav-item:focus-visible {{
+      color: var(--accent-dark);
+      border-color: var(--border-strong);
+      outline: none;
+    }}
+    .sidebar-footer {{
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--text-muted);
+      font-size: 12px;
+      box-shadow: var(--shadow-sm);
+    }}
+    .sidebar-footer strong {{
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 3px;
+    }}
+    .plant {{
+      width: 118px;
+      height: 118px;
+      margin: 0 auto 22px;
+      opacity: 0.82;
+      display: block;
+    }}
+    main {{ padding: 34px 44px 48px; min-width: 0; }}
+    .content {{ max-width: var(--content-max); margin: 0 auto; }}
+    .topbar {{
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      background: var(--panel-2);
-      border-bottom: 1px solid var(--line);
+      align-items: flex-start;
+      gap: 28px;
+      margin-bottom: 34px;
     }}
-    .day-block header span {{ color: var(--muted); }}
-    .table-wrap {{ overflow-x: auto; }}
-    table {{ width: 100%; border-collapse: collapse; min-width: 760px; }}
-    th, td {{ text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(51, 68, 61, 0.75); vertical-align: top; }}
-    th {{ color: var(--muted); font-size: 12px; font-weight: 600; }}
-    td {{ font-size: 14px; }}
-    .section-head {{ display: flex; justify-content: space-between; gap: 16px; align-items: end; margin: 4px 0 16px; }}
-    .section-head p {{ margin: 4px 0 0; color: var(--muted); }}
+    .headline h2 {{
+      margin: 0;
+      font-size: clamp(32px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -0.055em;
+      font-weight: 820;
+    }}
+    .headline p {{
+      margin: 10px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }}
+    .status-pill {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      background: var(--accent-soft-2);
+      color: var(--accent-dark);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-weight: 650;
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+    }}
+    .status-dot {{
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      line-height: 1;
+    }}
+    .toolbar {{
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }}
     .search {{
-      min-height: 44px;
-      width: min(280px, 100%);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--panel);
-      color: var(--text);
-      padding: 9px 12px;
+      width: min(360px, 100%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 15px;
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow-sm);
+      color: var(--text-soft);
     }}
-    .meta {{ font-size: 13px; }}
-    @media (max-width: 920px) {{
-      .shell {{ grid-template-columns: 1fr; }}
-      .rail {{ position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }}
-      .nav {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
-      .nav button {{ text-align: center; padding: 8px 6px; }}
-      main {{ padding: 18px; }}
-      .stats, .two, .three, .chart-row {{ grid-template-columns: 1fr; }}
-      .topbar, .section-head {{ display: grid; }}
-      .today-item {{ grid-template-columns: 1fr; }}
+    .search svg {{ width: 19px; height: 19px; flex: 0 0 auto; }}
+    .search input {{
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      min-width: 0;
+    }}
+    .search input::placeholder {{ color: var(--text-soft); }}
+    .screen {{ display: none; }}
+    .screen.active {{ display: block; }}
+    .summary-grid {{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 24px;
+    }}
+    .grid {{ display: grid; gap: 22px; }}
+    .grid.two {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+    .grid.three {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+    .card {{
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.84)),
+        var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }}
+    .metric-card {{
+      min-height: 194px;
+      padding: 25px 26px;
+      overflow: hidden;
+      position: relative;
+    }}
+    .metric-card h3, .table-card h3, .panel h3 {{
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      font-weight: 760;
+    }}
+    .panel {{ padding: 22px; }}
+    .calorie-chart {{ margin-top: 26px; }}
+    .bar-track {{
+      height: 54px;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(90deg, rgba(49, 91, 56, 0.08) 0, rgba(49, 91, 56, 0.08) 2px, transparent 2px, transparent 24px),
+        #f5f7f1;
+      padding: 9px;
+      border: 1px solid #eef1ea;
+    }}
+    .bar-fill {{
+      height: 100%;
+      min-width: 18px;
+      max-width: 100%;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #5d8d62, #7ca77e);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    }}
+    .axis {{
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      color: var(--text-soft);
+      font-size: 13px;
+    }}
+    .axis span:nth-child(2) {{ text-align: center; }}
+    .axis span:nth-child(3) {{ text-align: right; }}
+    .big-number {{
+      margin-top: 27px;
+      font-size: 56px;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      font-weight: 820;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }}
+    .metric-label {{
+      margin-top: 16px;
+      color: var(--text-muted);
+    }}
+    .ghost-icon {{
+      position: absolute;
+      right: 24px;
+      bottom: 23px;
+      width: 76px;
+      height: 76px;
+      border-radius: 26px;
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      background: var(--accent-soft);
+      opacity: 0.75;
+    }}
+    .ghost-icon svg {{ width: 32px; height: 32px; }}
+    .table-card {{ overflow: hidden; }}
+    .table-header {{
+      min-height: 62px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }}
+    .count-pill {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #f6f7f3;
+      color: var(--text-muted);
+      font-weight: 650;
+      font-size: 13px;
+      white-space: nowrap;
+    }}
+    .table-scroll {{ overflow-x: auto; }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      min-width: 920px;
+    }}
+    th {{
+      height: 42px;
+      padding: 0 12px;
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 760;
+      border-bottom: 1px solid var(--border);
+      background: rgba(250, 251, 247, 0.84);
+    }}
+    td {{
+      padding: 16px 12px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }}
+    tr:last-child td {{ border-bottom: 0; }}
+    tbody tr:hover {{ background: #fbfcf8; }}
+    .muted {{ color: var(--text-soft); }}
+    .num {{ font-variant-numeric: tabular-nums; }}
+    .tag {{
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      color: var(--text-muted);
+      background: #f6f7f3;
+    }}
+    .tag-breakfast {{
+      color: var(--orange);
+      background: var(--orange-soft);
+      border-color: #f1dfca;
+    }}
+    .tag-meal, .tag-food {{
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-color: var(--border-strong);
+    }}
+    .tag-beverage {{
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-color: #d9e8ed;
+    }}
+    .notes {{
+      color: var(--text-muted);
+      line-height: 1.45;
+    }}
+    .col-time {{ width: 7%; }}
+    .col-type {{ width: 10%; }}
+    .col-class {{ width: 10%; }}
+    .col-item {{ width: 11%; }}
+    .col-qty {{ width: 9%; }}
+    .col-unit {{ width: 7%; }}
+    .col-cal {{ width: 8%; }}
+    .col-source {{ width: 17%; }}
+    .col-notes {{ width: 21%; }}
+    .section-head {{
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 22px;
+      margin-bottom: 18px;
+    }}
+    .section-head h2 {{
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }}
+    .section-head p {{
+      margin: 7px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }}
+    .chart {{
+      width: 100%;
+      height: 130px;
+      display: block;
+      background:
+        repeating-linear-gradient(90deg, rgba(49, 91, 56, 0.06) 0, rgba(49, 91, 56, 0.06) 1px, transparent 1px, transparent 28px),
+        #f5f7f1;
+      border-radius: 10px;
+      border: 1px solid #eef1ea;
+      margin-top: 14px;
+    }}
+    .empty-chart, .empty-state {{
+      min-height: 94px;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      background: var(--card-soft);
+      padding: 16px;
+    }}
+    .day-block {{ margin-bottom: 18px; }}
+    .day-block:last-child {{ margin-bottom: 0; }}
+    @media (max-width: 980px) {{
+      .app-shell {{ grid-template-columns: 1fr; }}
+      .sidebar {{
+        position: static;
+        height: auto;
+        padding: 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }}
+      .brand {{ margin-bottom: 18px; }}
+      .nav {{
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }}
+      .nav-item {{
+        justify-content: center;
+        padding: 0 10px;
+      }}
+      .nav-item span {{ display: none; }}
+      .plant, .sidebar-footer {{ display: none; }}
+      main {{ padding: 24px 16px 34px; }}
+      .topbar, .section-head {{
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }}
+      .summary-grid, .grid.two, .grid.three {{ grid-template-columns: 1fr; }}
+      .toolbar {{ justify-content: stretch; }}
+      .search {{ width: 100%; }}
     }}
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="rail">
-      <div class="brand">
-        <strong>Fer Health OS</strong>
-        <span>CSV local dashboard</span>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M19.4 4.6C16.5 4.4 14 5.2 12 7c-2 1.8-3 4.5-3 8 4.5-.1 7.6-1.3 9.3-3.6 1.3-1.7 1.7-4 1.1-6.8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 19c2.1-5.2 5.7-8.7 10.8-10.4" stroke="currentColor" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h1>Fer Health OS</h1>
+            <p>CSV local dashboard</p>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Pantallas">
+          <button class="nav-item active" data-screen="home">{nav_icon("home")}<span>Hoy</span></button>
+          <button class="nav-item" data-screen="health">{nav_icon("health")}<span>Salud</span></button>
+          <button class="nav-item" data-screen="food">{nav_icon("food")}<span>Comida</span></button>
+          <button class="nav-item" data-screen="exercise">{nav_icon("exercise")}<span>Ejercicio</span></button>
+          <button class="nav-item" data-screen="sleep">{nav_icon("sleep")}<span>Sueño</span></button>
+        </nav>
       </div>
-      <nav class="nav" aria-label="Pantallas">
-        <button class="active" data-screen="home">Hoy</button>
-        <button data-screen="health">Salud</button>
-        <button data-screen="food">Comida</button>
-        <button data-screen="exercise">Ejercicio</button>
-        <button data-screen="sleep">Sueño</button>
-      </nav>
+
+      <div>
+        {plant_svg()}
+        <div class="sidebar-footer">
+          <strong>Datos locales</strong>
+          CSV • Sin diagnosticos
+        </div>
+      </div>
     </aside>
+
     <main>
-      <div class="topbar">
-        <div>
-          <h1>Hoy, {safe(today.isoformat())}</h1>
-          <div class="meta">Generado desde CSVs locales. Sin diagnosticos, solo seguimiento.</div>
-        </div>
-        <div class="pill">Actualizado {safe(payload["generated"])}</div>
+      <div class="content">
+        <header class="topbar">
+          <div class="headline">
+            <h2>Hoy, {safe(today.isoformat())}</h2>
+            <p>Generado desde CSVs locales. Sin diagnosticos, solo seguimiento.</p>
+          </div>
+          <div class="status-pill">
+            <span class="status-dot">✓</span>
+            Actualizado {safe(generated)}
+          </div>
+        </header>
+
+        <section id="home" class="screen active">
+          <div class="summary-grid">
+            {progress_card("Calorias por dia", context["calories_today"], 3000, "1,500", "3,000")}
+            {stat_card("Items registrados", str(len(food_rows)), "total historico", nav_icon("doc"))}
+          </div>
+          <div class="grid two">
+            <section class="card panel">
+              <h3>Como vamos hoy</h3>
+              <div class="table-scroll" style="margin-top:18px;">
+                <table>
+                  <thead><tr><th>Area</th><th>Registro</th><th>Detalle</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="tag tag-food">Comida</span></td><td class="num">{safe(fmt(context["calories_today"]))}</td><td><span class="notes">calorias registradas hoy</span></td></tr>
+                    <tr><td><span class="tag tag-meal">Ejercicio</span></td><td class="num">{safe(fmt(context["minutes_today"], " min"))}</td><td><span class="notes">actividad registrada hoy</span></td></tr>
+                    <tr><td><span class="tag tag-beverage">Sueño</span></td><td class="num">{safe(fmt(today_sleep_hours, " h"))}</td><td><span class="notes">ultimo registro de sueño de hoy</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="card panel">
+              <h3>Mini tendencias</h3>
+              <div class="grid two" style="margin-top:18px;">
+                <div><h3>Peso</h3>{line_chart(weight_points)}</div>
+                <div><h3>Calorias</h3>{bar_chart(calorie_points)}</div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="health" class="screen">
+          <div class="section-head">
+            <div><h2>Salud corporal</h2><p>Peso, grasa, hidratacion y origen de medicion.</p></div>
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Peso</h3>{line_chart(weight_points)}</section>
+            <section class="card panel"><h3>Grasa corporal</h3>{line_chart(fat_points, "#976735")}</section>
+          </div>
+          <div class="summary-grid">
+            {stat_card("Peso mas reciente", fmt(latest_health.get("weight_kg"), " kg"), latest_health.get("date", ""))}
+            {stat_card("Hidratacion", fmt(latest_health.get("hydration_pct"), "%"), latest_health.get("source", ""))}
+          </div>
+          <section class="card table-card">{table_header("Mediciones", len(health_rows))}{table(health_headers, sorted(health_rows, key=lambda row: (row.get("date", ""), row.get("time", "")), reverse=True))}</section>
+        </section>
+
+        <section id="food" class="screen">
+          <div class="section-head">
+            <div><h2>Comida por dia</h2><p>Revisa que comio ayer, antier o cualquier dia registrado.</p></div>
+            {search_box("food", "Filtrar por fecha o texto")}
+          </div>
+          <div class="summary-grid">
+            {progress_card("Calorias por dia", context["calories_today"], 3000, "1,500", "3,000")}
+            {stat_card("Items registrados", str(len(food_rows)), "total historico", nav_icon("doc"))}
+          </div>
+          <div class="filterable" data-list="food">
+            {day_blocks(group_by_date(food_rows), lambda rows: table(food_headers, sorted(rows, key=lambda row: row.get("time", ""))))}
+          </div>
+        </section>
+
+        <section id="exercise" class="screen">
+          <div class="section-head">
+            <div><h2>Ejercicio</h2><p>Sesiones, intensidad, duracion y calorias estimadas.</p></div>
+            {search_box("exercise", "Filtrar por fecha o tipo")}
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Minutos por dia</h3>{bar_chart(exercise_points)}</section>
+            {stat_card("Sesiones registradas", str(len(exercise_rows)), "total historico")}
+          </div>
+          <div class="filterable" data-list="exercise">
+            {day_blocks(group_by_date(exercise_rows), lambda rows: exercise_table(exercise_headers, sorted(rows, key=lambda row: row.get("time", ""))))}
+          </div>
+        </section>
+
+        <section id="sleep" class="screen">
+          <div class="section-head">
+            <div><h2>Sueño</h2><p>Horas, calidad y visitas al baño por noche.</p></div>
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Horas de sueño</h3>{line_chart(sleep_points)}</section>
+            <section class="card panel"><h3>Calidad</h3>{line_chart(quality_points, "#416c7a")}</section>
+          </div>
+          <section class="card table-card">{table_header("Registros de sueño", len(sleep_rows))}{table(sleep_headers, sorted(sleep_rows, key=lambda row: row.get("date", ""), reverse=True))}</section>
+        </section>
       </div>
-
-      <section id="home" class="screen active">
-        <div class="grid stats">
-          {stat_card("Peso mas reciente", fmt(latest_health.get("weight_kg"), " kg"), latest_health.get("date", ""))}
-          {stat_card("Grasa corporal", fmt(latest_health.get("body_fat_pct"), "%"), latest_health.get("source", ""))}
-          {stat_card("Calorias hoy", fmt(context["calories_today"]), f'{len(context["today_food"])} comidas registradas')}
-          {stat_card("Ejercicio hoy", fmt(context["minutes_today"], " min"), f'{len(context["today_exercise"])} sesiones registradas')}
-        </div>
-        <div class="grid two">
-          <section class="panel">
-            <h2>Como vamos hoy</h2>
-            <div class="today-list">
-              <div class="today-item"><span class="pill">Comida</span><strong>{safe(fmt(context["calories_today"]))}</strong><small>calorias registradas hoy</small></div>
-              <div class="today-item"><span class="pill">Ejercicio</span><strong>{safe(fmt(context["minutes_today"], " min"))}</strong><small>actividad registrada hoy</small></div>
-              <div class="today-item"><span class="pill">Sueño</span><strong>{safe(fmt((number(context["today_sleep"][-1]["duration_hours"]) if context["today_sleep"] else None), " h"))}</strong><small>ultimo registro de sueño de hoy</small></div>
-            </div>
-          </section>
-          <section class="panel">
-            <h2>Mini tendencias</h2>
-            <div class="chart-row">
-              <div><h3>Peso</h3>{line_chart(weight_points, "#7AE7B7")}</div>
-              <div><h3>Calorias</h3>{bar_chart(calorie_points, "#B8A4FF")}</div>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section id="health" class="screen">
-        <div class="section-head">
-          <div><h2>Salud corporal</h2><p>Peso, grasa, hidratacion y origen de medicion.</p></div>
-        </div>
-        <div class="grid three">
-          <section class="panel"><h3>Peso</h3>{line_chart(weight_points, "#7AE7B7")}</section>
-          <section class="panel"><h3>Grasa corporal</h3>{line_chart(fat_points, "#F4C95D")}</section>
-          {stat_card("Hidratacion mas reciente", fmt(latest_health.get("hydration_pct"), "%"), latest_health.get("date", ""))}
-        </div>
-        <div class="grid" style="margin-top:14px;">{table(health_headers, sorted(health_rows, key=lambda row: (row.get("date", ""), row.get("time", "")), reverse=True))}</div>
-      </section>
-
-      <section id="food" class="screen">
-        <div class="section-head">
-          <div><h2>Comida por dia</h2><p>Revisa que comio ayer, antier o cualquier dia registrado.</p></div>
-          <input class="search" data-filter="food" placeholder="Filtrar por fecha o texto">
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Calorias por dia</h3>{bar_chart(calorie_points, "#B8A4FF")}</section>
-          {stat_card("Items registrados", str(len(food_rows)), "total historico")}
-        </div>
-        <div class="grid filterable" data-list="food" style="margin-top:14px;">
-          {day_blocks(group_by_date(food_rows), lambda rows: table(food_headers, sorted(rows, key=lambda row: row.get("time", ""))))}
-        </div>
-      </section>
-
-      <section id="exercise" class="screen">
-        <div class="section-head">
-          <div><h2>Ejercicio</h2><p>Sesiones, intensidad, duracion y calorias estimadas.</p></div>
-          <input class="search" data-filter="exercise" placeholder="Filtrar por fecha o tipo">
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Minutos por dia</h3>{bar_chart(exercise_points, "#7AE7B7")}</section>
-          {stat_card("Sesiones registradas", str(len(exercise_rows)), "total historico")}
-        </div>
-        <div class="grid filterable" data-list="exercise" style="margin-top:14px;">
-          {day_blocks(group_by_date(exercise_rows), lambda rows: exercise_table(exercise_headers, sorted(rows, key=lambda row: row.get("time", ""))))}
-        </div>
-      </section>
-
-      <section id="sleep" class="screen">
-        <div class="section-head">
-          <div><h2>Sueño</h2><p>Horas, calidad y visitas al baño por noche.</p></div>
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Horas de sueño</h3>{line_chart(sleep_points, "#7AE7B7")}</section>
-          <section class="panel"><h3>Calidad</h3>{line_chart(quality_points, "#B8A4FF")}</section>
-        </div>
-        <div class="grid" style="margin-top:14px;">{table(sleep_headers, sorted(sleep_rows, key=lambda row: row.get("date", ""), reverse=True))}</div>
-      </section>
     </main>
   </div>
   <script type="application/json" id="payload">{safe(json.dumps(payload))}</script>
@@ -597,6 +1065,26 @@ def render_dashboard(context):
 </body>
 </html>
 """
+
+
+def search_box(kind, placeholder):
+    return (
+        f'<label class="search" aria-label="{safe(placeholder)}">'
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        '<path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />'
+        '</svg>'
+        f'<input type="search" data-filter="{safe(kind)}" placeholder="{safe(placeholder)}">'
+        '</label>'
+    )
+
+
+def table_header(title, count):
+    return (
+        '<div class="table-header">'
+        f'<h3>{safe(title)}</h3>'
+        f'<span class="count-pill">{count} registros</span>'
+        '</div>'
+    )
 
 
 def main():

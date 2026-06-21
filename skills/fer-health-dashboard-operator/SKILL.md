@@ -64,7 +64,7 @@ http://127.0.0.1:8787/
 
 ## Dashboard UI Rules
 
-- Use the registered `Health Studio` style from Max's dashboard style registry.
+- Use the registered `Botanical Ledger Light` style from Max's dashboard style registry.
 - Keep the dashboard operational and scannable, not a landing page.
 - Show food item rows with item, quantity, unit, calories, API source, and notes.
 - Show exercise metadata as human-readable details, not raw JSON.

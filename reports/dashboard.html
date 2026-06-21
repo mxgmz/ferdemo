@@ -1,263 +1,637 @@
 <!doctype html>
-<html lang="es" data-version="2026-06-21T15:08:06.148296">
+<html lang="es" data-version="2026-06-21T15:39:40.581905">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B0F0E'/%3E%3Cpath d='M8 17h5l2-6 4 12 2-6h3' fill='none' stroke='%237AE7B7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%23edf4e8'/%3E%3Cpath d='M23.2 7.1C19.5 6.8 16.4 7.9 14 10.2c-2.4 2.2-3.6 5.4-3.5 9.6 5.3-.1 9-1.6 11-4.4 1.6-2 2.1-4.8 1.7-8.3Z' fill='none' stroke='%23315b38' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M7 25c2.7-6.4 7-10.7 13.2-12.8' fill='none' stroke='%23315b38' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
   <title>Fer Health OS Dashboard</title>
   <style>
     :root {
-      --bg: #0B0F0E;
-      --panel: #121816;
-      --panel-2: #18201D;
-      --line: #33443D;
-      --text: #EFF7F2;
-      --muted: #98A79F;
-      --mint: #7AE7B7;
-      --violet: #B8A4FF;
-      --amber: #F4C95D;
-      --coral: #F97068;
-      --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+      --bg: #f7f8f4;
+      --bg-soft: #fbfbf8;
+      --sidebar: #fafbf7;
+      --card: #ffffff;
+      --card-soft: #f9faf6;
+      --text: #17201b;
+      --text-muted: #68736b;
+      --text-soft: #8a928b;
+      --border: #e3e8df;
+      --border-strong: #d4ddcf;
+      --shadow-sm: 0 4px 14px rgba(24, 38, 29, 0.06);
+      --shadow-md: 0 16px 40px rgba(24, 38, 29, 0.08);
+      --accent: #477a4e;
+      --accent-dark: #315b38;
+      --accent-soft: #edf4e8;
+      --accent-soft-2: #f4f8ef;
+      --blue-soft: #eef5f7;
+      --blue: #416c7a;
+      --orange-soft: #fbf2e8;
+      --orange: #976735;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --sidebar-w: 272px;
+      --content-max: 1180px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--bg);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 70% 0%, rgba(82, 117, 84, 0.08), transparent 30%),
+        linear-gradient(180deg, var(--bg-soft), var(--bg));
       color: var(--text);
-      font-family: Inter, Avenir Next, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
     }
     button, input { font: inherit; }
-    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100dvh; }
-    .rail {
-      border-right: 1px solid var(--line);
-      background: #09100D;
-      padding: 22px 16px;
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    }
+    .sidebar {
       position: sticky;
       top: 0;
-      height: 100dvh;
+      height: 100vh;
+      padding: 30px 20px;
+      border-right: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(250, 251, 247, 0.92)),
+        var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .brand { display: grid; gap: 4px; margin-bottom: 24px; }
-    .brand strong { font-size: 18px; }
-    .brand span, .meta, small { color: var(--muted); }
-    .nav { display: grid; gap: 8px; }
-    .nav button {
-      min-height: 44px;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      background: transparent;
-      color: var(--muted);
-      text-align: left;
-      padding: 10px 12px;
-      cursor: pointer;
+    .brand {
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      margin-bottom: 54px;
     }
-    .nav button.active, .nav button:hover, .nav button:focus-visible {
-      color: var(--text);
-      border-color: var(--line);
-      background: var(--panel);
-      outline: none;
-    }
-    main { padding: 28px; max-width: 1380px; width: 100%; }
-    .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 22px; }
-    h1, h2, h3 { margin: 0; letter-spacing: 0; }
-    h1 { font-size: 28px; line-height: 1.2; }
-    h2 { font-size: 20px; margin-bottom: 14px; }
-    h3 { font-size: 15px; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    .grid { display: grid; gap: 14px; }
-    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
-    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .panel, .stat-card, .day-block {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-    .panel { padding: 16px; }
-    .stat-card { padding: 14px; display: grid; gap: 4px; min-height: 112px; }
-    .stat-card span { color: var(--muted); font-size: 13px; }
-    .stat-card strong { font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1.1; }
-    .stat-card small { min-height: 20px; }
-    .today-list { display: grid; gap: 10px; }
-    .today-item {
-      display: grid;
-      grid-template-columns: 90px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      min-height: 48px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--panel-2);
-    }
-    .pill {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      min-height: 26px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      color: var(--mint);
-      background: rgba(122, 231, 183, 0.08);
-      font-size: 12px;
-    }
-    .chart { width: 100%; height: 130px; display: block; background: var(--panel-2); border-radius: 6px; }
-    .chart-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    .empty-chart, .empty-state {
-      min-height: 84px;
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--accent-soft);
       display: grid;
       place-items: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      border-radius: 6px;
-      background: var(--panel-2);
-      padding: 16px;
+      color: var(--accent-dark);
+      flex: 0 0 auto;
     }
-    .day-block { overflow: hidden; box-shadow: none; }
-    .day-block header {
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      font-weight: 760;
+    }
+    .brand p {
+      margin: 7px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+    .nav-item {
+      min-height: 52px;
+      padding: 0 16px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      color: var(--text-muted);
+      background: transparent;
+      font-weight: 600;
+      position: relative;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+    .nav-item svg {
+      width: 21px;
+      height: 21px;
+      stroke-width: 1.9;
+      flex: 0 0 auto;
+    }
+    .nav-item.active {
+      color: var(--accent-dark);
+      background: linear-gradient(90deg, var(--accent-soft), rgba(255, 255, 255, 0.88));
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 10px;
+      width: 4px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--accent);
+    }
+    .nav-item:hover, .nav-item:focus-visible {
+      color: var(--accent-dark);
+      border-color: var(--border-strong);
+      outline: none;
+    }
+    .sidebar-footer {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--text-muted);
+      font-size: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .sidebar-footer strong {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+    .plant {
+      width: 118px;
+      height: 118px;
+      margin: 0 auto 22px;
+      opacity: 0.82;
+      display: block;
+    }
+    main { padding: 34px 44px 48px; min-width: 0; }
+    .content { max-width: var(--content-max); margin: 0 auto; }
+    .topbar {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      background: var(--panel-2);
-      border-bottom: 1px solid var(--line);
+      align-items: flex-start;
+      gap: 28px;
+      margin-bottom: 34px;
     }
-    .day-block header span { color: var(--muted); }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 760px; }
-    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(51, 68, 61, 0.75); vertical-align: top; }
-    th { color: var(--muted); font-size: 12px; font-weight: 600; }
-    td { font-size: 14px; }
-    .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin: 4px 0 16px; }
-    .section-head p { margin: 4px 0 0; color: var(--muted); }
+    .headline h2 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -0.055em;
+      font-weight: 820;
+    }
+    .headline p {
+      margin: 10px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      background: var(--accent-soft-2);
+      color: var(--accent-dark);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-weight: 650;
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+    }
+    .status-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      line-height: 1;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
     .search {
-      min-height: 44px;
-      width: min(280px, 100%);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--panel);
-      color: var(--text);
-      padding: 9px 12px;
+      width: min(360px, 100%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 15px;
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow-sm);
+      color: var(--text-soft);
     }
-    .meta { font-size: 13px; }
-    @media (max-width: 920px) {
-      .shell { grid-template-columns: 1fr; }
-      .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-      .nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-      .nav button { text-align: center; padding: 8px 6px; }
-      main { padding: 18px; }
-      .stats, .two, .three, .chart-row { grid-template-columns: 1fr; }
-      .topbar, .section-head { display: grid; }
-      .today-item { grid-template-columns: 1fr; }
+    .search svg { width: 19px; height: 19px; flex: 0 0 auto; }
+    .search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      min-width: 0;
+    }
+    .search input::placeholder { color: var(--text-soft); }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+    .grid { display: grid; gap: 22px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.84)),
+        var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+    .metric-card {
+      min-height: 194px;
+      padding: 25px 26px;
+      overflow: hidden;
+      position: relative;
+    }
+    .metric-card h3, .table-card h3, .panel h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      font-weight: 760;
+    }
+    .panel { padding: 22px; }
+    .calorie-chart { margin-top: 26px; }
+    .bar-track {
+      height: 54px;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(90deg, rgba(49, 91, 56, 0.08) 0, rgba(49, 91, 56, 0.08) 2px, transparent 2px, transparent 24px),
+        #f5f7f1;
+      padding: 9px;
+      border: 1px solid #eef1ea;
+    }
+    .bar-fill {
+      height: 100%;
+      min-width: 18px;
+      max-width: 100%;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #5d8d62, #7ca77e);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    }
+    .axis {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+    .axis span:nth-child(2) { text-align: center; }
+    .axis span:nth-child(3) { text-align: right; }
+    .big-number {
+      margin-top: 27px;
+      font-size: 56px;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      font-weight: 820;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+    .metric-label {
+      margin-top: 16px;
+      color: var(--text-muted);
+    }
+    .ghost-icon {
+      position: absolute;
+      right: 24px;
+      bottom: 23px;
+      width: 76px;
+      height: 76px;
+      border-radius: 26px;
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      background: var(--accent-soft);
+      opacity: 0.75;
+    }
+    .ghost-icon svg { width: 32px; height: 32px; }
+    .table-card { overflow: hidden; }
+    .table-header {
+      min-height: 62px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #f6f7f3;
+      color: var(--text-muted);
+      font-weight: 650;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      min-width: 920px;
+    }
+    th {
+      height: 42px;
+      padding: 0 12px;
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 760;
+      border-bottom: 1px solid var(--border);
+      background: rgba(250, 251, 247, 0.84);
+    }
+    td {
+      padding: 16px 12px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fbfcf8; }
+    .muted { color: var(--text-soft); }
+    .num { font-variant-numeric: tabular-nums; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      color: var(--text-muted);
+      background: #f6f7f3;
+    }
+    .tag-breakfast {
+      color: var(--orange);
+      background: var(--orange-soft);
+      border-color: #f1dfca;
+    }
+    .tag-meal, .tag-food {
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-color: var(--border-strong);
+    }
+    .tag-beverage {
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-color: #d9e8ed;
+    }
+    .notes {
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .col-time { width: 7%; }
+    .col-type { width: 10%; }
+    .col-class { width: 10%; }
+    .col-item { width: 11%; }
+    .col-qty { width: 9%; }
+    .col-unit { width: 7%; }
+    .col-cal { width: 8%; }
+    .col-source { width: 17%; }
+    .col-notes { width: 21%; }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 22px;
+      margin-bottom: 18px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .section-head p {
+      margin: 7px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .chart {
+      width: 100%;
+      height: 130px;
+      display: block;
+      background:
+        repeating-linear-gradient(90deg, rgba(49, 91, 56, 0.06) 0, rgba(49, 91, 56, 0.06) 1px, transparent 1px, transparent 28px),
+        #f5f7f1;
+      border-radius: 10px;
+      border: 1px solid #eef1ea;
+      margin-top: 14px;
+    }
+    .empty-chart, .empty-state {
+      min-height: 94px;
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      background: var(--card-soft);
+      padding: 16px;
+    }
+    .day-block { margin-bottom: 18px; }
+    .day-block:last-child { margin-bottom: 0; }
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand { margin-bottom: 18px; }
+      .nav {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 0 10px;
+      }
+      .nav-item span { display: none; }
+      .plant, .sidebar-footer { display: none; }
+      main { padding: 24px 16px 34px; }
+      .topbar, .section-head {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .summary-grid, .grid.two, .grid.three { grid-template-columns: 1fr; }
+      .toolbar { justify-content: stretch; }
+      .search { width: 100%; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="rail">
-      <div class="brand">
-        <strong>Fer Health OS</strong>
-        <span>CSV local dashboard</span>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M19.4 4.6C16.5 4.4 14 5.2 12 7c-2 1.8-3 4.5-3 8 4.5-.1 7.6-1.3 9.3-3.6 1.3-1.7 1.7-4 1.1-6.8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 19c2.1-5.2 5.7-8.7 10.8-10.4" stroke="currentColor" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h1>Fer Health OS</h1>
+            <p>CSV local dashboard</p>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Pantallas">
+          <button class="nav-item active" data-screen="home"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-linejoin="round" /></svg><span>Hoy</span></button>
+          <button class="nav-item" data-screen="health"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.2 5.8a5.2 5.2 0 0 0-7.4 0L12 6.6l-.8-.8a5.2 5.2 0 0 0-7.4 7.4L12 21l8.2-7.8a5.2 5.2 0 0 0 0-7.4Z" stroke="currentColor" stroke-linejoin="round" /></svg><span>Salud</span></button>
+          <button class="nav-item" data-screen="food"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v8M4 3v8M10 3v8M4 11h6M7 11v10M17 3v18M17 3c2.2 2.2 3 4.4 3 7 0 2-1.1 3-3 3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" /></svg><span>Comida</span></button>
+          <button class="nav-item" data-screen="exercise"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.5 7.5h11M8 5v5M16 5v5M4 9v3M20 9v3M9 15l3-2 3 2M12 13v7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" /></svg><span>Ejercicio</span></button>
+          <button class="nav-item" data-screen="sleep"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.2A8.2 8.2 0 0 1 8.8 4a7.6 7.6 0 1 0 11.2 11.2Z" stroke="currentColor" stroke-linejoin="round" /></svg><span>Sueño</span></button>
+        </nav>
       </div>
-      <nav class="nav" aria-label="Pantallas">
-        <button class="active" data-screen="home">Hoy</button>
-        <button data-screen="health">Salud</button>
-        <button data-screen="food">Comida</button>
-        <button data-screen="exercise">Ejercicio</button>
-        <button data-screen="sleep">Sueño</button>
-      </nav>
+
+      <div>
+        
+      <svg class="plant" viewBox="0 0 160 160" fill="none" aria-hidden="true">
+        <path d="M82 132V75" stroke="#9CAF88" stroke-width="4" stroke-linecap="round" />
+        <path d="M82 96C57 96 41 77 38 46c28 2 47 18 44 50Z" fill="#D9E5C8" />
+        <path d="M88 85c29-7 45-25 48-55-27 1-49 21-48 55Z" fill="#B9C9A3" />
+        <path d="M74 115c-23-4-39-20-48-48 29 2 47 18 48 48Z" fill="#C8D7B5" />
+        <path d="M86 117c23-5 38-20 45-46-27 3-44 19-45 46Z" fill="#E0E8D3" />
+        <ellipse cx="82" cy="139" rx="46" ry="8" fill="#EAEFE2" />
+      </svg>
+    
+        <div class="sidebar-footer">
+          <strong>Datos locales</strong>
+          CSV • Sin diagnosticos
+        </div>
+      </div>
     </aside>
+
     <main>
-      <div class="topbar">
-        <div>
-          <h1>Hoy, 2026-06-21</h1>
-          <div class="meta">Generado desde CSVs locales. Sin diagnosticos, solo seguimiento.</div>
-        </div>
-        <div class="pill">Actualizado 2026-06-21 15:08</div>
+      <div class="content">
+        <header class="topbar">
+          <div class="headline">
+            <h2>Hoy, 2026-06-21</h2>
+            <p>Generado desde CSVs locales. Sin diagnosticos, solo seguimiento.</p>
+          </div>
+          <div class="status-pill">
+            <span class="status-dot">✓</span>
+            Actualizado 2026-06-21 15:39
+          </div>
+        </header>
+
+        <section id="home" class="screen active">
+          <div class="summary-grid">
+            <article class="card metric-card"><h3>Calorias por dia</h3><div class="calorie-chart"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><div class="axis"><span>0</span><span>1,500</span><span>3,000</span></div></div></article>
+            <article class="card metric-card"><h3>Items registrados</h3><div class="big-number">7</div><div class="metric-label">total historico</div><div class="ghost-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5h6M9 9h6M9 13h4M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg></div></article>
+          </div>
+          <div class="grid two">
+            <section class="card panel">
+              <h3>Como vamos hoy</h3>
+              <div class="table-scroll" style="margin-top:18px;">
+                <table>
+                  <thead><tr><th>Area</th><th>Registro</th><th>Detalle</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="tag tag-food">Comida</span></td><td class="num">1000.0</td><td><span class="notes">calorias registradas hoy</span></td></tr>
+                    <tr><td><span class="tag tag-meal">Ejercicio</span></td><td class="num">60.0 min</td><td><span class="notes">actividad registrada hoy</span></td></tr>
+                    <tr><td><span class="tag tag-beverage">Sueño</span></td><td class="num">8.2 h</td><td><span class="notes">ultimo registro de sueño de hoy</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="card panel">
+              <h3>Mini tendencias</h3>
+              <div class="grid two" style="margin-top:18px;">
+                <div><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></div>
+                <div><h3>Calorias</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#477a4e"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="health" class="screen">
+          <div class="section-head">
+            <div><h2>Salud corporal</h2><p>Peso, grasa, hidratacion y origen de medicion.</p></div>
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></section>
+            <section class="card panel"><h3>Grasa corporal</h3><div class="empty-chart">Sin datos suficientes</div></section>
+          </div>
+          <div class="summary-grid">
+            <article class="card metric-card"><h3>Peso mas reciente</h3><div class="big-number">Sin datos</div><div class="metric-label"></div></article>
+            <article class="card metric-card"><h3>Hidratacion</h3><div class="big-number">Sin datos</div><div class="metric-label"></div></article>
+          </div>
+          <section class="card table-card"><div class="table-header"><h3>Mediciones</h3><span class="count-pill">0 registros</span></div><div class="empty-state">Sin registros para mostrar.</div></section>
+        </section>
+
+        <section id="food" class="screen">
+          <div class="section-head">
+            <div><h2>Comida por dia</h2><p>Revisa que comio ayer, antier o cualquier dia registrado.</p></div>
+            <label class="search" aria-label="Filtrar por fecha o texto"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg><input type="search" data-filter="food" placeholder="Filtrar por fecha o texto"></label>
+          </div>
+          <div class="summary-grid">
+            <article class="card metric-card"><h3>Calorias por dia</h3><div class="calorie-chart"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><div class="axis"><span>0</span><span>1,500</span><span>3,000</span></div></div></article>
+            <article class="card metric-card"><h3>Items registrados</h3><div class="big-number">7</div><div class="metric-label">total historico</div><div class="ghost-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5h6M9 9h6M9 13h4M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg></div></article>
+          </div>
+          <div class="filterable" data-list="food">
+            <section class="card table-card day-block"><div class="table-header"><h3>2026-06-21</h3><span class="count-pill">7 registros</span></div><div class="table-scroll "><table><thead><tr><th class="col-time">Hora</th><th class="col-type">Tipo</th><th class="col-class">Clase</th><th class="col-item">Item</th><th class="col-qty">Cantidad</th><th class="col-unit">Unidad</th><th class="col-cal">Calorias</th><th class="col-source">Referencia</th><th class="col-notes">Notas</th></tr></thead><tbody><tr><td><span class="muted">-</span></td><td><span class="tag tag-breakfast">breakfast</span></td><td><span class="tag tag-food">food</span></td><td>eggs</td><td><span class="num">200</span></td><td>g</td><td><span class="num">310</span></td><td><span class="notes">Egg, whole, cooked, hard-boiled</span></td><td><span class="notes">from natural-language breakfast entry; generic eggs mapped to plain cooked eggs</span></td></tr><tr><td><span class="muted">-</span></td><td><span class="tag tag-breakfast">breakfast</span></td><td><span class="tag tag-food">food</span></td><td>beans</td><td><span class="num">100</span></td><td>g</td><td><span class="num">132</span></td><td><span class="notes">Beans, black, mature seeds, cooked, boiled, with salt</span></td><td><span class="notes">from natural-language breakfast entry; generic frijoles mapped to black beans cooked</span></td></tr><tr><td><span class="muted">-</span></td><td><span class="tag tag-breakfast">breakfast</span></td><td><span class="tag tag-beverage">beverage</span></td><td>coffee</td><td><span class="num">250</span></td><td>ml</td><td><span class="num">2</span></td><td><span class="notes">Coffee, brewed</span></td><td><span class="notes">from natural-language breakfast entry</span></td></tr><tr><td>15:00</td><td><span class="tag tag-meal">lunch</span></td><td><span class="tag tag-beverage">beverage</span></td><td>water</td><td><span class="num">1000</span></td><td>ml</td><td><span class="num">0</span></td><td><span class="notes">Water</span></td><td><span class="notes">from natural-language lunch entry; one liter of water</span></td></tr><tr><td>15:00</td><td><span class="tag tag-meal">lunch</span></td><td><span class="tag tag-food">food</span></td><td>sirloin</td><td><span class="num">150</span></td><td>g</td><td><span class="num">364</span></td><td><span class="notes">Beef top sirloin trimmed to 1/8 inch fat cooked broiled</span></td><td><span class="notes">from natural-language lunch entry; local reference used; plain cooked sirloin default</span></td></tr><tr><td>15:00</td><td><span class="tag tag-meal">lunch</span></td><td><span class="tag tag-food">food</span></td><td>oatmeal cooked</td><td><span class="num">200</span></td><td>g</td><td><span class="num">142</span></td><td><span class="notes">Oatmeal cooked with water without salt</span></td><td><span class="notes">from natural-language lunch entry; oatmeal was prepared with water</span></td></tr><tr><td>15:00</td><td><span class="tag tag-meal">lunch</span></td><td><span class="tag tag-food">food</span></td><td>carrot</td><td><span class="num">122</span></td><td>g</td><td><span class="num">50</span></td><td><span class="notes">Carrots raw</span></td><td><span class="notes">from natural-language lunch entry; estimated as one small carrot 50 g plus one large carrot 72 g</span></td></tr></tbody></table></div></section>
+          </div>
+        </section>
+
+        <section id="exercise" class="screen">
+          <div class="section-head">
+            <div><h2>Ejercicio</h2><p>Sesiones, intensidad, duracion y calorias estimadas.</p></div>
+            <label class="search" aria-label="Filtrar por fecha o tipo"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg><input type="search" data-filter="exercise" placeholder="Filtrar por fecha o tipo"></label>
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Minutos por dia</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#477a4e"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></section>
+            <article class="card metric-card"><h3>Sesiones registradas</h3><div class="big-number">1</div><div class="metric-label">total historico</div></article>
+          </div>
+          <div class="filterable" data-list="exercise">
+            <section class="card table-card day-block"><div class="table-header"><h3>2026-06-21</h3><span class="count-pill">1 registros</span></div><div class="table-scroll "><table><thead><tr><th class="col-time">Hora</th><th class="">Tipo</th><th class="">Min</th><th class="">Intensidad</th><th class="">Calorias</th><th class="">Detalles</th><th class="col-notes">Notas</th></tr></thead><tbody><tr><td><span class="muted">-</span></td><td>boxing</td><td><span class="num">60</span></td><td><span class="muted">-</span></td><td><span class="num"></span></td><td><span class="notes">sparring min: 20, rounds: 4</span></td><td><span class="notes">intensity and calories not provided</span></td></tr></tbody></table></div></section>
+          </div>
+        </section>
+
+        <section id="sleep" class="screen">
+          <div class="section-head">
+            <div><h2>Sueño</h2><p>Horas, calidad y visitas al baño por noche.</p></div>
+          </div>
+          <div class="summary-grid">
+            <section class="card panel"><h3>Horas de sueño</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#477a4e" stroke-width="3" /><g fill="#477a4e"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
+            <section class="card panel"><h3>Calidad</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#416c7a" stroke-width="3" /><g fill="#416c7a"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
+          </div>
+          <section class="card table-card"><div class="table-header"><h3>Registros de sueño</h3><span class="count-pill">1 registros</span></div><div class="table-scroll "><table><thead><tr><th class="">Fecha</th><th class="">Dormir</th><th class="">Despertar</th><th class="">Horas</th><th class="">Calidad</th><th class="">Bano</th><th class="col-notes">Notas</th></tr></thead><tbody><tr><td>2026-06-21</td><td>00:00</td><td>08:15</td><td><span class="num">8.25</span></td><td><span class="num">7</span></td><td><span class="num">3</span></td><td><span class="notes">went to sleep at midnight</span></td></tr></tbody></table></div></section>
+        </section>
       </div>
-
-      <section id="home" class="screen active">
-        <div class="grid stats">
-          <article class="stat-card"><span>Peso mas reciente</span><strong>Sin datos</strong><small></small></article>
-          <article class="stat-card"><span>Grasa corporal</span><strong>Sin datos</strong><small></small></article>
-          <article class="stat-card"><span>Calorias hoy</span><strong>1000.0</strong><small>7 comidas registradas</small></article>
-          <article class="stat-card"><span>Ejercicio hoy</span><strong>60.0 min</strong><small>1 sesiones registradas</small></article>
-        </div>
-        <div class="grid two">
-          <section class="panel">
-            <h2>Como vamos hoy</h2>
-            <div class="today-list">
-              <div class="today-item"><span class="pill">Comida</span><strong>1000.0</strong><small>calorias registradas hoy</small></div>
-              <div class="today-item"><span class="pill">Ejercicio</span><strong>60.0 min</strong><small>actividad registrada hoy</small></div>
-              <div class="today-item"><span class="pill">Sueño</span><strong>8.2 h</strong><small>ultimo registro de sueño de hoy</small></div>
-            </div>
-          </section>
-          <section class="panel">
-            <h2>Mini tendencias</h2>
-            <div class="chart-row">
-              <div><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></div>
-              <div><h3>Calorias</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#B8A4FF"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></div>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section id="health" class="screen">
-        <div class="section-head">
-          <div><h2>Salud corporal</h2><p>Peso, grasa, hidratacion y origen de medicion.</p></div>
-        </div>
-        <div class="grid three">
-          <section class="panel"><h3>Peso</h3><div class="empty-chart">Sin datos suficientes</div></section>
-          <section class="panel"><h3>Grasa corporal</h3><div class="empty-chart">Sin datos suficientes</div></section>
-          <article class="stat-card"><span>Hidratacion mas reciente</span><strong>Sin datos</strong><small></small></article>
-        </div>
-        <div class="grid" style="margin-top:14px;"><div class="empty-state">Sin registros para mostrar.</div></div>
-      </section>
-
-      <section id="food" class="screen">
-        <div class="section-head">
-          <div><h2>Comida por dia</h2><p>Revisa que comio ayer, antier o cualquier dia registrado.</p></div>
-          <input class="search" data-filter="food" placeholder="Filtrar por fecha o texto">
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Calorias por dia</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#B8A4FF"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></section>
-          <article class="stat-card"><span>Items registrados</span><strong>7</strong><small>total historico</small></article>
-        </div>
-        <div class="grid filterable" data-list="food" style="margin-top:14px;">
-          <section class="day-block"><header><strong>2026-06-21</strong><span>7 registros</span></header><div class="table-wrap"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Clase</th><th>Item</th><th>Cantidad</th><th>Unidad</th><th>Calorias</th><th>Fuente API</th><th>Notas</th></tr></thead><tbody><tr><td></td><td>breakfast</td><td>food</td><td>eggs</td><td>200</td><td>g</td><td>310</td><td>Egg, whole, cooked, hard-boiled</td><td>from natural-language breakfast entry; generic eggs mapped to plain cooked eggs</td></tr><tr><td></td><td>breakfast</td><td>food</td><td>beans</td><td>100</td><td>g</td><td>132</td><td>Beans, black, mature seeds, cooked, boiled, with salt</td><td>from natural-language breakfast entry; generic frijoles mapped to black beans cooked</td></tr><tr><td></td><td>breakfast</td><td>beverage</td><td>coffee</td><td>250</td><td>ml</td><td>2</td><td>Coffee, brewed</td><td>from natural-language breakfast entry</td></tr><tr><td>15:00</td><td>lunch</td><td>beverage</td><td>water</td><td>1000</td><td>ml</td><td>0</td><td>Water</td><td>from natural-language lunch entry; one liter of water</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>sirloin</td><td>150</td><td>g</td><td>364</td><td>Beef top sirloin trimmed to 1/8 inch fat cooked broiled</td><td>from natural-language lunch entry; local reference used; plain cooked sirloin default</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>oatmeal cooked</td><td>200</td><td>g</td><td>142</td><td>Oatmeal cooked with water without salt</td><td>from natural-language lunch entry; oatmeal was prepared with water</td></tr><tr><td>15:00</td><td>lunch</td><td>food</td><td>carrot</td><td>122</td><td>g</td><td>50</td><td>Carrots raw</td><td>from natural-language lunch entry; estimated as one small carrot 50 g plus one large carrot 72 g</td></tr></tbody></table></div></section>
-        </div>
-      </section>
-
-      <section id="exercise" class="screen">
-        <div class="section-head">
-          <div><h2>Ejercicio</h2><p>Sesiones, intensidad, duracion y calorias estimadas.</p></div>
-          <input class="search" data-filter="exercise" placeholder="Filtrar por fecha o tipo">
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Minutos por dia</h3><svg class="chart" viewBox="0 0 320 120" role="img"><g fill="#7AE7B7"><rect x="16.0" y="16.0" width="288.0" height="88.0" rx="4" /></g></svg></section>
-          <article class="stat-card"><span>Sesiones registradas</span><strong>1</strong><small>total historico</small></article>
-        </div>
-        <div class="grid filterable" data-list="exercise" style="margin-top:14px;">
-          <section class="day-block"><header><strong>2026-06-21</strong><span>1 registros</span></header><div class="table-wrap"><table><thead><tr><th>Hora</th><th>Tipo</th><th>Min</th><th>Intensidad</th><th>Calorias</th><th>Detalles</th><th>Notas</th></tr></thead><tbody><tr><td></td><td>boxing</td><td>60</td><td></td><td></td><td>sparring min: 20, rounds: 4</td><td>intensity and calories not provided</td></tr></tbody></table></div></section>
-        </div>
-      </section>
-
-      <section id="sleep" class="screen">
-        <div class="section-head">
-          <div><h2>Sueño</h2><p>Horas, calidad y visitas al baño por noche.</p></div>
-        </div>
-        <div class="grid two">
-          <section class="panel"><h3>Horas de sueño</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#7AE7B7" stroke-width="3" /><g fill="#7AE7B7"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
-          <section class="panel"><h3>Calidad</h3><svg class="chart" viewBox="0 0 320 120" role="img"><polyline points="16.0,104.0" fill="none" stroke="#B8A4FF" stroke-width="3" /><g fill="#B8A4FF"><circle cx="16.0" cy="104.0" r="3" /></g></svg></section>
-        </div>
-        <div class="grid" style="margin-top:14px;"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Dormir</th><th>Despertar</th><th>Horas</th><th>Calidad</th><th>Bano</th><th>Notas</th></tr></thead><tbody><tr><td>2026-06-21</td><td>00:00</td><td>08:15</td><td>8.25</td><td>7</td><td>3</td><td>went to sleep at midnight</td></tr></tbody></table></div></div>
-      </section>
     </main>
   </div>
-  <script type="application/json" id="payload">{&quot;generated&quot;: &quot;2026-06-21 15:08&quot;, &quot;version&quot;: &quot;2026-06-21T15:08:06.148296&quot;, &quot;today&quot;: &quot;2026-06-21&quot;}</script>
+  <script type="application/json" id="payload">{&quot;generated&quot;: &quot;2026-06-21 15:39&quot;, &quot;version&quot;: &quot;2026-06-21T15:39:40.581905&quot;, &quot;today&quot;: &quot;2026-06-21&quot;, &quot;style&quot;: &quot;Botanical Ledger Light&quot;}</script>
   <script>
     if (window.location.protocol.startsWith('http')) {
       const currentVersion = document.documentElement.dataset.version;
